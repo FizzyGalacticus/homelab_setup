@@ -59,3 +59,31 @@ services:
     env_file: ./env
     volumes:
       - /opt/configs/postgres:/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 30s
+      timeout: 20s
+
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v1.12.0
+    container_name: mealie
+    restart: unless-stopped
+    ports:
+      - 9004:9000
+    volumes:
+      - /opt/configs/mealie:/app/data/
+    env_file: ./env
+    environment:
+      ALLOW_SIGNUP: "true"
+      MAX_WORKERS: 1
+      WEB_CONCURRENCY: 1
+      BASE_URL: https://mealie.yourdomain.com
+      DB_ENGINE: postgres
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: mealie
+      POSTGRES_DB: mealie
+      POSTGRES_SERVER: postgres
+      POSTGRES_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
