@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    ports:
+      - 9000:9443
+    volumes:
+        - /opt/configs/portainer:/data
+        - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  nginx-proxy:
+    image: jc21/nginx-proxy-manager:latest
+    ports:
+      - 80:80
+      - 9001:81
+      - 443:443
+    volumes:
+        - /opt/configs/nginx-proxy:/data
+        - /opt/configs/nginx-proxy/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+
+  pihole:
+    image: pihole/pihole:latest
+    ports:
+      - 53:53
+      - 67:67/udp
+      - 9002:80/tcp
+    env_file: ./env
+    volumes:
+      - /opt/configs/pihole:/etc/pihole
+      - /opt/configs/pihole/etc/dnsmasq.d:/etc/dnsmasq.d
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  update_domain:
+    container_name: update_domain
+    build:
+      context: ./dockerfiles/update_digital_ocean_ip
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./env
+    volumes:
+      - /opt/configs/update_domain:/data # Optional, but recommended
