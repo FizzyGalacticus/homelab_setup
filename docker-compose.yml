@@ -48,3 +48,14 @@ services:
     env_file: ./env
     volumes:
       - /opt/configs/update_domain:/data # Optional, but recommended
+  
+  postgres:
+    container_name: postgres
+    build:
+      context: ./dockerfiles/multi_service_postgres
+      dockerfile: Dockerfile
+    ports:
+      - 9003:5432
+    env_file: ./env
+    volumes:
+      - /opt/configs/postgres:/data
